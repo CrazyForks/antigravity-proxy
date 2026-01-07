@@ -19,9 +19,9 @@
 | getaddrinfo() Hook | ✅ | ✅ Phase 1 |
 | FakeIP 系统 | ✅ | ✅ Phase 1 |
 | SOCKS5 协议 | ✅ | ✅ Phase 1 (基础级) |
-| CreateProcessW Hook | ✅ | ⏳ Phase 2 |
-| 子进程自动注入 | ✅ | ⏳ Phase 2 |
-| send/recv Hook | ✅ | ⏳ Phase 3 |
+| CreateProcessW Hook | ✅ | ✅ Phase 2 |
+| 子进程自动注入 | ✅ | ✅ Phase 2 |
+| send/recv Hook | ✅ | ✅ Phase 3 |
 | TargetProcess 过滤 | ✅ | ⏳ 待定 |
 | DnsServer 配置 | ✅ | ⏳ 待定 |
 | 超时控制 | ❌ | ✅ 新增 |
@@ -50,10 +50,10 @@
 - [x] SOCKS5 基础协议
 - [x] WSAConnect Hook
 
-## Phase 2 待实现
-- [ ] CreateProcessW Hook
-- [ ] 子进程自动注入
+## Phase 2 实现清单 (已完成)
+- [x] CreateProcessW Hook
+- [x] 子进程自动注入
 
-## Phase 3 待实现
-- [ ] send/recv Hook
-- [ ] 流量监控/修改
+## Phase 3 实现清单 (已完成)
+- [x] send/recv Hook
+- [x] 流量监控/日志

@@ -27,6 +27,8 @@ namespace Core {
         ProxyConfig proxy;
         FakeIPConfig fakeIp;
         TimeoutConfig timeout;
+        bool trafficLogging = false;    // Phase 3: 是否启用流量监控日志
+        bool childInjection = true;     // Phase 2: 是否自动注入子进程
 
         static Config& Instance() {
             static Config instance;
@@ -61,6 +63,11 @@ namespace Core {
                     timeout.send_ms = t.value("send", 5000);
                     timeout.recv_ms = t.value("recv", 5000);
                 }
+
+                // Phase 2/3 配置项
+                trafficLogging = j.value("traffic_logging", false);
+                childInjection = j.value("child_injection", true);
+
                 Logger::Info("Config loaded successfully.");
                 return true;
             } catch (const std::exception& e) {
