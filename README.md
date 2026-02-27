@@ -1070,7 +1070,7 @@ MinHook 部分版权归 **Tsuda Kageyu** 所有。
       <sub>关注公众号</sub>
     </td>
     <td align="center">
-      <img src="img/qun-21.png" alt="微信群二维码" width="200"/><br/>
+      <img src="img/qun-22.jpg" alt="微信群二维码" width="200"/><br/>
       <sub>🔥 加入微信交流群</sub>
     </td>
   </tr>
