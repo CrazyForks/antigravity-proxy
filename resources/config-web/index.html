@@ -21,14 +21,20 @@
   />
 </head>
 
-<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+<body class="min-h-screen bg-gradient-to-br from-stone-100 via-slate-100 to-zinc-100 font-['Bahnschrift','Segoe_UI','PingFang_SC',sans-serif] text-slate-900 dark:from-slate-950 dark:via-zinc-950 dark:to-slate-900 dark:text-slate-100">
+  <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -left-24 -top-20 h-80 w-80 rounded-full bg-teal-400/20 blur-3xl dark:bg-teal-500/10"></div>
+    <div class="absolute -right-20 top-1/3 h-72 w-72 rounded-full bg-amber-300/20 blur-3xl dark:bg-amber-400/10"></div>
+    <div class="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-slate-300/30 blur-3xl dark:bg-slate-700/20"></div>
+  </div>
+
   <div id="app" class="min-h-screen">
     <!-- 顶部栏 -->
-    <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/70">
+    <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-950/70">
       <div class="mx-auto flex max-w-[1400px] flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
         <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-500/10 ring-1 ring-slate-900/5 dark:bg-sky-400/10 dark:ring-white/10">
-            <i class="fa-solid fa-gear text-sky-600 dark:text-sky-300"></i>
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500/10 ring-1 ring-slate-900/5 dark:bg-teal-400/10 dark:ring-white/10">
+            <i class="fa-solid fa-gear text-teal-600 dark:text-teal-300"></i>
           </div>
           <div class="leading-tight">
             <div class="text-xs text-slate-500 dark:text-slate-400">Antigravity-Proxy</div>
@@ -41,23 +47,23 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-900/70" title="导入 config.json（仅读取本地文件，不会上传）">
+          <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-900/70" title="导入 config.json（仅读取本地文件，不会上传）">
             <i class="fa-solid fa-file-import text-slate-500 dark:text-slate-400"></i>
             <span>导入</span>
             <input id="fileInput" class="hidden" type="file" accept="application/json" />
           </label>
 
-          <button id="btnExport" class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-sky-600/20 hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none dark:disabled:bg-slate-700" type="button" title="导出 config.json">
+          <button id="btnExport" class="inline-flex items-center gap-2 rounded-lg bg-teal-700 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-teal-700/20 transition duration-200 hover:-translate-y-0.5 hover:bg-teal-600 active:translate-y-0 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none dark:disabled:bg-slate-700" type="button" title="导出 config.json">
             <i class="fa-solid fa-download"></i>
             <span>导出</span>
           </button>
 
-          <button id="btnOpenPresets" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-900/70" type="button" title="快速模板预设">
+          <button id="btnOpenPresets" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-900/70" type="button" title="快速模板预设">
             <i class="fa-solid fa-wand-magic-sparkles text-slate-500 dark:text-slate-400"></i>
             <span>模板</span>
           </button>
 
-          <button id="btnToggleTheme" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-900/70" type="button" title="亮色/暗色切换">
+          <button id="btnToggleTheme" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-900/70" type="button" title="亮色/暗色切换">
             <i id="themeIcon" class="fa-solid fa-moon text-slate-500 dark:text-slate-400"></i>
             <span id="themeText">暗色</span>
           </button>
@@ -68,7 +74,7 @@
     <main class="mx-auto max-w-[1400px] px-4 py-6">
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
         <!-- 左侧导航 -->
-        <aside class="rounded-lg border border-slate-200 bg-white shadow-md shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900/40 dark:shadow-black/20">
+        <aside class="rounded-2xl border border-slate-200 bg-white/85 shadow-md shadow-slate-900/5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/40 dark:shadow-black/20">
           <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
             <div class="text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400">NAV</div>
             <div id="statusPill" class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:ring-slate-700">
@@ -110,13 +116,17 @@
                 <span class="font-semibold">已载入</span>：
                 <span id="loadedName" class="font-mono">（无）</span>
               </div>
-              <button id="btnResetToEmpty" class="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60" type="button" title="清空并回到空白状态">
+              <button id="btnResetToEmpty" class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-md px-2 py-1 text-slate-600 transition duration-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60" type="button" title="清空并回到空白状态">
                 <i class="fa-solid fa-arrow-rotate-left"></i>
               </button>
             </div>
             <div id="errorSummary" class="mt-2 hidden rounded-md bg-rose-500/10 px-2 py-2 text-rose-700 ring-1 ring-rose-500/20 dark:text-rose-200">
               <div class="font-semibold">存在校验错误，无法导出</div>
               <div id="errorSummaryText" class="mt-1 whitespace-pre-wrap"></div>
+            </div>
+            <div id="schemaDriftSummary" class="mt-2 hidden rounded-md bg-amber-500/10 px-2 py-2 text-amber-900 ring-1 ring-amber-500/20 dark:text-amber-200">
+              <div class="font-semibold">字段同步自检提示</div>
+              <div id="schemaDriftText" class="mt-1 whitespace-pre-wrap"></div>
             </div>
           </div>
         </aside>
@@ -146,7 +156,7 @@
               <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/40">
                   <div class="flex items-start gap-3">
-                    <div class="mt-1 text-sky-600 dark:text-sky-300"><i class="fa-solid fa-circle-info"></i></div>
+                    <div class="mt-1 text-teal-600 dark:text-teal-300"><i class="fa-solid fa-circle-info"></i></div>
                     <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                       <div class="font-semibold text-slate-900 dark:text-slate-100">开始使用</div>
                       <ol class="list-decimal pl-5">
@@ -179,7 +189,7 @@
                     </div>
                     <div class="rounded-lg bg-slate-50 p-3 ring-1 ring-slate-200 dark:bg-slate-950/40 dark:ring-slate-800">
                       <div class="text-xs text-slate-500 dark:text-slate-400">路由规则</div>
-                      <div id="statRules" class="mt-1 text-2xl font-bold text-sky-700 dark:text-sky-300">0</div>
+                      <div id="statRules" class="mt-1 text-2xl font-bold text-teal-700 dark:text-teal-300">0</div>
                     </div>
                   </div>
                   <div class="mt-3 text-xs text-slate-500 dark:text-slate-400">
@@ -207,7 +217,7 @@
                     <span class="font-mono">_comment</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">build.ps1 默认会写入：Antigravity-Proxy 配置文件。</span>
+                      <span class="tip-pop">作用：为配置文件添加人类可读说明。取值：任意字符串。影响：不参与后端代理逻辑。建议：保留项目名与用途，便于排障定位。</span>
                     </span>
                   </label>
                   <input id="meta_comment" class="field-input" type="text" data-bind="_comment" placeholder="Antigravity-Proxy 配置文件" />
@@ -219,7 +229,7 @@
                     <span class="font-mono">_version</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">build.ps1 会将脚本中的 $Version 写入到 _version。</span>
+                      <span class="tip-pop">作用：标识配置版本。取值：语义化版本字符串（如 1.7.0）。影响：不影响运行逻辑，但影响排障追踪。建议：与 DLL 版本同步维护。</span>
                     </span>
                   </label>
                   <input id="meta_version" class="field-input" type="text" data-bind="_version" placeholder="例如：1.7" />
@@ -231,7 +241,7 @@
                     <span class="font-mono">_build.config</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">与 build.ps1 的 -Config 对齐（Release/Debug）。</span>
+                      <span class="tip-pop">作用：记录构建配置来源。取值：Release 或 Debug。影响：仅用于追踪来源，不改变代理行为。建议：保持与实际构建参数一致。</span>
                     </span>
                   </label>
                   <select id="meta_build_config" class="field-input" data-bind="_build.config">
@@ -246,7 +256,7 @@
                     <span class="font-mono">_build.arch</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">与 build.ps1 的 -Arch 对齐（x64/x86）。</span>
+                      <span class="tip-pop">作用：记录构建架构。取值：x64 或 x86。影响：仅用于追踪，不参与运行判断。建议：按产物位数准确填写。</span>
                     </span>
                   </label>
                   <select id="meta_build_arch" class="field-input" data-bind="_build.arch">
@@ -261,7 +271,7 @@
                     <span class="font-mono">_build.date</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">build.ps1 生成 config.json 时写入当前时间；本工具可手动刷新。</span>
+                      <span class="tip-pop">作用：记录配置生成时间。取值：日期时间字符串。影响：不影响代理逻辑。建议：导出前刷新，便于回溯问题发生时间。</span>
                     </span>
                   </label>
                   <div class="flex flex-wrap items-center gap-2">
@@ -282,7 +292,7 @@
                     <span class="font-mono">log_level</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">可选：debug/info/warn/error。后端会尝试解析字符串并在无效时回退为 info。</span>
+                      <span class="tip-pop">作用：控制日志粒度。取值：debug/info/warn/error。影响：debug 日志最多且 I/O 开销更高。建议：默认 info，排障时临时切 debug。</span>
                     </span>
                   </label>
                   <select id="log_level" class="field-input" data-bind="log_level">
@@ -299,7 +309,7 @@
                     <span class="font-mono">traffic_logging</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">是否记录流量日志（调试用）。</span>
+                      <span class="tip-pop">作用：开启流量级日志。取值：布尔值。影响：可提升可观测性但会增加日志量。建议：仅在定位问题时开启。</span>
                     </span>
                   </label>
                   <label class="toggle">
@@ -330,7 +340,7 @@
                     <span class="font-mono">proxy.host</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">代理服务器地址（例如：127.0.0.1 或 ::1）。为空会被后端回退为 127.0.0.1。</span>
+                      <span class="tip-pop">作用：指定上游代理主机。取值：IPv4/IPv6/域名字符串。影响：目标不可达会导致握手失败。建议：优先填本机回环地址并确认端口监听。</span>
                     </span>
                   </label>
                   <input id="proxy_host" class="field-input" type="text" data-bind="proxy.host" placeholder="127.0.0.1" />
@@ -342,7 +352,7 @@
                     <span class="font-mono">proxy.port</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">端口范围 0-65535；其中 0 表示禁用代理（直接直连）。后端会对 <0 或 >65535 回退为 7890。</span>
+                      <span class="tip-pop">作用：指定上游代理端口。取值：0-65535 整数。影响：0 表示禁用代理并走直连。建议：常规使用 7890/7891/10808 等实际监听端口。</span>
                     </span>
                   </label>
                   <input id="proxy_port" class="field-input" type="number" min="0" max="65535" step="1" data-bind="proxy.port" />
@@ -355,7 +365,7 @@
                     <span class="font-mono">proxy.type</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">代理类型：socks5 或 http；无效值会回退为 socks5。</span>
+                      <span class="tip-pop">作用：选择代理握手协议。取值：socks5 或 http。影响：与上游代理协议不匹配会连接失败。建议：不确定时优先 socks5。</span>
                     </span>
                   </label>
                   <select id="proxy_type" class="field-input" data-bind="proxy.type">
@@ -371,7 +381,7 @@
                     <span>快速填充</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">一键填入常见代理软件的默认配置。</span>
+                      <span class="tip-pop">作用：快速填充常见本地代理参数。取值：预设按钮。影响：会覆盖当前 proxy.host/proxy.port/proxy.type。建议：填充后先做连通性测试再导出。</span>
                     </span>
                   </label>
                   <div class="flex flex-wrap gap-2">
@@ -406,7 +416,7 @@
                       <span>批量扫描端口</span>
                     </button>
                     <div id="proxyTestSpinner" class="hidden flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                      <div class="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-400"></div>
+                      <div class="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-teal-600 dark:border-slate-700 dark:border-t-teal-400"></div>
                       <span>测试中...</span>
                     </div>
                   </div>
@@ -505,7 +515,7 @@
                     <span class="font-mono">timeout.connect</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">连接超时（必须为正数；后端发现 <=0 会回退为 5000）。</span>
+                      <span class="tip-pop">作用：控制建立连接超时。取值：正整数毫秒。影响：过小易误判超时，过大失败反馈慢。建议：保持 3000-8000ms。</span>
                     </span>
                   </label>
                   <input id="timeout_connect" class="field-input" type="number" min="1" step="1" data-bind="timeout.connect" />
@@ -517,7 +527,7 @@
                     <span class="font-mono">timeout.send</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">发送超时（必须为正数；后端发现 <=0 会回退为 5000）。</span>
+                      <span class="tip-pop">作用：控制发送阶段超时。取值：正整数毫秒。影响：直接影响握手与请求发送稳定性。建议：与 connect 接近，常用 5000ms。</span>
                     </span>
                   </label>
                   <input id="timeout_send" class="field-input" type="number" min="1" step="1" data-bind="timeout.send" />
@@ -529,7 +539,7 @@
                     <span class="font-mono">timeout.recv</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">接收超时（必须为正数；后端发现 <=0 会回退为 5000）。</span>
+                      <span class="tip-pop">作用：控制接收阶段超时。取值：正整数毫秒。影响：过小会导致响应读取失败。建议：弱网环境可适当调高。</span>
                     </span>
                   </label>
                   <input id="timeout_recv" class="field-input" type="number" min="1" step="1" data-bind="timeout.recv" />
@@ -545,7 +555,7 @@
                     <span class="font-mono">fake_ip.enabled</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">是否启用 FakeIP 系统（拦截 DNS 解析并分配虚拟地址）。</span>
+                      <span class="tip-pop">作用：启用 FakeIP 映射机制。取值：布尔值。影响：影响域名到虚拟地址映射与回查流程。建议：需要域名路由分流时保持开启。</span>
                     </span>
                   </label>
                   <label class="toggle">
@@ -561,7 +571,7 @@
                     <span class="font-mono">fake_ip.cidr</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">FakeIP 分配的 CIDR（默认 198.18.0.0/15）。本工具会校验 CIDR 格式。</span>
+                      <span class="tip-pop">作用：设置 FakeIP 地址池。取值：IPv4 CIDR。影响：与本地网段冲突会导致异常直连或回查失败。建议：使用 198.18.0.0/15 并避免与现网冲突。</span>
                     </span>
                   </label>
                   <input id="fakeip_cidr" class="field-input" type="text" data-bind="fake_ip.cidr" placeholder="198.18.0.0/15" />
@@ -608,7 +618,7 @@
                     <span class="font-mono">proxy_rules.dns_mode</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">DNS(53端口) 的处理策略：direct（直连，默认）或 proxy（走代理）。</span>
+                      <span class="tip-pop">作用：定义 53 端口流量路由。取值：direct/proxy。影响：direct 延迟更低，proxy 更一致但可能更慢。建议：国内场景默认 direct。</span>
                     </span>
                   </label>
                   <select id="dns_mode" class="field-input" data-bind="proxy_rules.dns_mode">
@@ -623,7 +633,7 @@
                     <span class="font-mono">proxy_rules.ipv6_mode</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">IPv6 策略：proxy（走代理，默认）/ direct（直连）/ block（阻止）。</span>
+                      <span class="tip-pop">作用：定义 IPv6 流量处理方式。取值：proxy/direct/block。影响：direct 可能绕过代理，block 可避免泄漏。建议：代理覆盖不足时优先 block 或 proxy。</span>
                     </span>
                   </label>
                   <select id="ipv6_mode" class="field-input" data-bind="proxy_rules.ipv6_mode">
@@ -639,7 +649,7 @@
                     <span class="font-mono">proxy_rules.udp_mode</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">UDP 策略：block（默认，阻断强制回退 TCP）/ direct（直连）/ proxy（走代理，需 SOCKS5 UDP Associate）。</span>
+                      <span class="tip-pop">作用：定义 UDP 流量行为。取值：block/direct/proxy。影响：direct 可能绕过代理；proxy 依赖上游支持 UDP Associate。建议：国内必须代理场景优先 block。</span>
                     </span>
                   </label>
                   <select id="udp_mode" class="field-input" data-bind="proxy_rules.udp_mode">
@@ -655,7 +665,7 @@
                     <span class="font-mono">proxy_rules.udp_fallback</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">UDP 代理失败降级策略（仅 udp_mode=proxy 时生效）：block（失败即阻断，默认）/ direct（失败回退直连）。</span>
+                      <span class="tip-pop">作用：定义 UDP 代理失败后的处理。取值：block/direct（仅 udp_mode=proxy 生效）。影响：direct 提高可用性但有直连泄漏风险。建议：默认 block。</span>
                     </span>
                   </label>
                   <select id="udp_fallback" class="field-input" data-bind="proxy_rules.udp_fallback">
@@ -700,7 +710,7 @@
                     <span class="font-mono">proxy_rules.routing.enabled</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">是否启用规则路由；关闭后将不会进行 routing.rules 匹配。</span>
+                      <span class="tip-pop">作用：总开关，控制是否启用 routing.rules。取值：布尔值。影响：关闭后仅按基础策略运行，不再分规则匹配。建议：需要精细分流时开启。</span>
                     </span>
                   </label>
                   <label class="toggle">
@@ -716,7 +726,7 @@
                     <span class="font-mono">proxy_rules.routing.priority_mode</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">order：按列表顺序；number：按 priority 数值降序（高优先级优先）。</span>
+                      <span class="tip-pop">作用：定义规则优先级算法。取值：order/number。影响：改变命中规则的先后顺序。建议：规则较少用 order，复杂场景用 number。</span>
                     </span>
                   </label>
                   <select id="priority_mode" class="field-input" data-bind="proxy_rules.routing.priority_mode">
@@ -731,7 +741,7 @@
                     <span class="font-mono">proxy_rules.routing.default_action</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">未命中任何规则时的默认动作：proxy 或 direct。</span>
+                      <span class="tip-pop">作用：作为路由兜底动作。取值：proxy/direct。影响：直接决定未命中流量是代理还是直连。建议：国内必须代理场景用 proxy。</span>
                     </span>
                   </label>
                   <select id="default_action" class="field-input" data-bind="proxy_rules.routing.default_action">
@@ -746,7 +756,7 @@
                     <span class="font-mono">proxy_rules.routing.use_default_private</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">自动加载 RFC1918/loopback 等内网直连规则（会在编译时插入 default-private）。</span>
+                      <span class="tip-pop">作用：自动注入内网直连规则。取值：布尔值。影响：可避免把局域网地址错误发往代理。建议：一般保持开启。</span>
                     </span>
                   </label>
                   <label class="toggle">
@@ -798,7 +808,7 @@
                           <span class="font-mono">name</span>
                           <span class="tip">
                             <i class="fa-solid fa-circle-info"></i>
-                            <span class="tip-pop">规则名称（为空将被后端显示为 (unnamed)）。</span>
+                            <span class="tip-pop">作用：标识路由规则。取值：非空字符串。影响：仅影响可读性与日志定位。建议：按业务语义命名，避免重复。</span>
                           </span>
                         </label>
                         <input id="rule_name" class="field-input" type="text" />
@@ -810,7 +820,7 @@
                           <span class="font-mono">enabled</span>
                           <span class="tip">
                             <i class="fa-solid fa-circle-info"></i>
-                            <span class="tip-pop">关闭后该规则不会参与匹配。</span>
+                            <span class="tip-pop">作用：单条规则开关。取值：布尔值。影响：关闭后规则被跳过。建议：调试规则冲突时可临时关闭。</span>
                           </span>
                         </label>
                         <label class="toggle">
@@ -818,6 +828,7 @@
                           <span class="toggle-ui"></span>
                           <span class="text-sm text-slate-700 dark:text-slate-200">启用</span>
                         </label>
+                        <div class="field-error" data-error-for="__rule.enabled"></div>
                       </div>
 
                       <div class="field">
@@ -825,7 +836,7 @@
                           <span class="font-mono">action</span>
                           <span class="tip">
                             <i class="fa-solid fa-circle-info"></i>
-                            <span class="tip-pop">命中该规则后的动作：proxy 或 direct（无效值会回退为 default_action）。</span>
+                            <span class="tip-pop">作用：定义规则命中动作。取值：proxy/direct。影响：直接决定匹配流量去向。建议：对内网资源使用 direct，对外网使用 proxy。</span>
                           </span>
                         </label>
                         <select id="rule_action" class="field-input">
@@ -840,7 +851,7 @@
                           <span class="font-mono">priority</span>
                           <span class="tip">
                             <i class="fa-solid fa-circle-info"></i>
-                            <span class="tip-pop">仅在 priority_mode=number 时生效，数值越大优先级越高。</span>
+                            <span class="tip-pop">作用：控制 number 模式优先级。取值：整数。影响：优先级高的规则先匹配。建议：关键兜底规则使用更低优先级。</span>
                           </span>
                         </label>
                         <input id="rule_priority" class="field-input" type="number" step="1" />
@@ -859,7 +870,7 @@
                             <span class="font-mono">ip_cidrs_v4</span>
                             <span class="tip">
                               <i class="fa-solid fa-circle-info"></i>
-                              <span class="tip-pop">IPv4 CIDR 列表（例如 10.0.0.0/8）。留空表示不按 IPv4 CIDR 匹配。</span>
+                              <span class="tip-pop">作用：设置 IPv4 网段匹配条件。取值：IPv4 CIDR 字符串数组。影响：命中后参与规则动作判定。建议：仅填必要网段并避免重叠冲突。</span>
                             </span>
                           </div>
                           <button class="btn btn-ghost btn-sm" type="button" data-list-add="rule.ip_cidrs_v4">
@@ -875,7 +886,7 @@
                             <span class="font-mono">ip_cidrs_v6</span>
                             <span class="tip">
                               <i class="fa-solid fa-circle-info"></i>
-                              <span class="tip-pop">IPv6 CIDR 列表（例如 fc00::/7）。留空表示不按 IPv6 CIDR 匹配。</span>
+                              <span class="tip-pop">作用：设置 IPv6 网段匹配条件。取值：IPv6 CIDR 字符串数组。影响：命中后参与规则动作判定。建议：无 IPv6 需求可留空。</span>
                             </span>
                           </div>
                           <button class="btn btn-ghost btn-sm" type="button" data-list-add="rule.ip_cidrs_v6">
@@ -891,7 +902,7 @@
                             <span class="font-mono">domains</span>
                             <span class="tip">
                               <i class="fa-solid fa-circle-info"></i>
-                              <span class="tip-pop">域名模式：支持通配符 * ?；以 . 开头表示匹配根域与子域（如 .example.com）。</span>
+                              <span class="tip-pop">作用：设置域名匹配条件。取值：域名模式数组，支持 * ? 与 .example.com 语义。影响：直接影响域名分流准确性。建议：规则尽量精确，避免过宽匹配。</span>
                             </span>
                           </div>
                           <button class="btn btn-ghost btn-sm" type="button" data-list-add="rule.domains">
@@ -907,7 +918,7 @@
                             <span class="font-mono">ports</span>
                             <span class="tip">
                               <i class="fa-solid fa-circle-info"></i>
-                              <span class="tip-pop">端口条件：80 / 443 / 10000-20000。留空表示匹配所有端口。</span>
+                              <span class="tip-pop">作用：设置端口匹配条件。取值：端口或端口段字符串数组。影响：可限制规则仅作用于指定业务端口。建议：默认仅填必需端口。</span>
                             </span>
                           </div>
                           <button class="btn btn-ghost btn-sm" type="button" data-list-add="rule.ports">
@@ -923,7 +934,7 @@
                             <span class="font-mono">protocols</span>
                             <span class="tip">
                               <i class="fa-solid fa-circle-info"></i>
-                              <span class="tip-pop">协议条件（当前主要使用 tcp）。留空表示匹配所有协议。</span>
+                              <span class="tip-pop">作用：设置协议匹配条件。取值：字符串数组（当前建议 tcp）。影响：非 tcp 值通常难命中。建议：未明确需求时只填 tcp。</span>
                             </span>
                           </div>
                           <div class="flex flex-wrap gap-2">
@@ -965,7 +976,7 @@
                     <span class="font-mono">child_injection</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">是否自动注入子进程（CreateProcess Hook）。</span>
+                      <span class="tip-pop">作用：控制是否对子进程执行注入。取值：布尔值。影响：关闭后子进程不会走 DLL 代理逻辑。建议：默认开启。</span>
                     </span>
                   </label>
                   <label class="toggle">
@@ -981,7 +992,7 @@
                     <span class="font-mono">child_injection_mode</span>
                     <span class="tip">
                       <i class="fa-solid fa-circle-info"></i>
-                      <span class="tip-pop">filtered：按 target_processes 过滤；inherit：注入所有子进程（可用 child_injection_exclude 排除）。无效值会回退为 filtered。</span>
+                      <span class="tip-pop">作用：定义子进程注入范围。取值：filtered/inherit。影响：决定匹配逻辑与注入覆盖面。建议：安全起见优先 filtered。</span>
                     </span>
                   </label>
                   <select id="child_injection_mode" class="field-input" data-bind="child_injection_mode">
@@ -999,7 +1010,7 @@
                       <span class="font-mono">target_processes</span>
                       <span class="tip">
                         <i class="fa-solid fa-circle-info"></i>
-                        <span class="tip-pop">目标进程列表：空=全部进程；filtered 模式下仅匹配到的子进程会注入（大小写不敏感，支持子串匹配）。</span>
+                        <span class="tip-pop">作用：定义 filtered 模式目标名单。取值：字符串数组，大小写不敏感子串匹配。影响：仅命中的子进程会注入。建议：按可执行文件名关键字填写。</span>
                       </span>
                     </div>
                     <button id="btnTargetProcessesAdd" class="btn btn-ghost" type="button">
@@ -1016,7 +1027,7 @@
                       <span class="font-mono">child_injection_exclude</span>
                       <span class="tip">
                         <i class="fa-solid fa-circle-info"></i>
-                        <span class="tip-pop">进程排除列表：inherit/filtered 都会先应用排除（大小写不敏感，支持子串匹配）。</span>
+                        <span class="tip-pop">作用：定义注入排除名单。取值：字符串数组，大小写不敏感子串匹配。影响：命中排除项的进程不会注入。建议：把已知不兼容进程放入此列表。</span>
                       </span>
                     </div>
                     <button id="btnChildExcludeAdd" class="btn btn-ghost" type="button">
@@ -1033,7 +1044,7 @@
       </div>
 
       <!-- JSON 预览（内联，不遮挡内容） -->
-      <section id="previewPanel" class="mt-6 rounded-lg border border-slate-200 bg-white shadow-md shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900/40 dark:shadow-black/20">
+      <section id="previewPanel" class="mt-6 rounded-2xl border border-slate-200 bg-white/85 shadow-md shadow-slate-900/5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/40 dark:shadow-black/20">
         <div class="flex items-center justify-between gap-2 border-b border-slate-200 px-5 py-3 dark:border-slate-800">
           <div class="flex items-center gap-2 text-sm font-semibold">
             <i class="fa-solid fa-code text-slate-500 dark:text-slate-400"></i>
@@ -1060,8 +1071,8 @@
     <div id="emptyOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-sm">
       <div class="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-md shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-black/30">
         <div class="flex items-start gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500/10 ring-1 ring-slate-900/5 dark:bg-sky-400/10 dark:ring-white/10">
-            <i class="fa-solid fa-cloud-arrow-up text-xl text-sky-600 dark:text-sky-300"></i>
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-500/10 ring-1 ring-slate-900/5 dark:bg-teal-400/10 dark:ring-white/10">
+            <i class="fa-solid fa-cloud-arrow-up text-xl text-teal-600 dark:text-teal-300"></i>
           </div>
           <div class="min-w-0">
             <div class="text-lg font-semibold">拖拽或点击导入 <span class="font-mono">config.json</span></div>
@@ -1095,7 +1106,7 @@
     <div id="loadingOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
       <div class="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-md shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-black/30">
         <div class="flex items-center gap-3">
-          <div class="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-400"></div>
+          <div class="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-teal-600 dark:border-slate-700 dark:border-t-teal-400"></div>
           <div class="text-sm font-semibold">正在加载配置...</div>
         </div>
       </div>
@@ -1106,7 +1117,7 @@
       <div class="mx-auto mt-12 w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-md shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-black/30">
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
           <div class="text-sm font-semibold">模板预设</div>
-          <button id="btnClosePresets" class="rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60" type="button" title="关闭">
+          <button id="btnClosePresets" class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-md px-2 py-1 text-slate-600 transition duration-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60" type="button" title="关闭">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -1114,7 +1125,7 @@
           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
             <button class="preset-card" type="button" data-preset="default">
               <div class="preset-title">默认配置</div>
-              <div class="preset-desc">log_level=debug；allowed_ports=[80,443]；udp_mode=block；示例 target_processes</div>
+              <div class="preset-desc">log_level=info；allowed_ports=[80,443]；udp_mode=block；示例 target_processes</div>
             </button>
             <button class="preset-card" type="button" data-preset="global_proxy">
               <div class="preset-title">全局代理</div>
@@ -1407,7 +1418,7 @@
             config: "Release",
             arch: "x64",
           },
-          log_level: "debug",
+          log_level: "info",
           proxy: { host: "127.0.0.1", port: 7890, type: "socks5" },
           fake_ip: { enabled: true, cidr: "198.18.0.0/15" },
           timeout: { connect: 5000, send: 5000, recv: 5000 },
@@ -1563,6 +1574,7 @@
           selectedRuleId: null,
           errors: {},
           warnings: {},
+          schemaIssues: [],
         };
 
         const KNOWN_TOP_FIELDS = [
@@ -1580,6 +1592,215 @@
           "target_processes",
           "proxy_rules",
         ];
+
+        // -------------------------
+        // Schema drift self-check
+        // -------------------------
+        // 说明：
+        // - 无法在浏览器直接读取 Config.hpp，因此这里用“前端内置字段清单”做三方交叉检查
+        // - 检查范围：defaultForm / exportObject / UI 绑定与列表容器 / validateAll 关键标记
+        // - 若出现提示，说明前端内部实现存在字段漂移风险，应优先修复
+        const REQUIRED_CONFIG_PATHS = [
+          "_comment",
+          "_version",
+          "_build.date",
+          "_build.config",
+          "_build.arch",
+          "log_level",
+          "proxy.host",
+          "proxy.port",
+          "proxy.type",
+          "fake_ip.enabled",
+          "fake_ip.cidr",
+          "timeout.connect",
+          "timeout.send",
+          "timeout.recv",
+          "traffic_logging",
+          "child_injection",
+          "child_injection_mode",
+          "child_injection_exclude[]",
+          "target_processes[]",
+          "proxy_rules.allowed_ports[]",
+          "proxy_rules.dns_mode",
+          "proxy_rules.ipv6_mode",
+          "proxy_rules.udp_mode",
+          "proxy_rules.udp_fallback",
+          "proxy_rules.routing.enabled",
+          "proxy_rules.routing.priority_mode",
+          "proxy_rules.routing.default_action",
+          "proxy_rules.routing.use_default_private",
+          "proxy_rules.routing.rules[].name",
+          "proxy_rules.routing.rules[].enabled",
+          "proxy_rules.routing.rules[].action",
+          "proxy_rules.routing.rules[].priority",
+          "proxy_rules.routing.rules[].ip_cidrs_v4[]",
+          "proxy_rules.routing.rules[].ip_cidrs_v6[]",
+          "proxy_rules.routing.rules[].domains[]",
+          "proxy_rules.routing.rules[].ports[]",
+          "proxy_rules.routing.rules[].protocols[]",
+        ];
+
+        const REQUIRED_DATA_BIND_PATHS = [
+          "_comment",
+          "_version",
+          "_build.config",
+          "_build.arch",
+          "log_level",
+          "proxy.host",
+          "proxy.port",
+          "proxy.type",
+          "fake_ip.enabled",
+          "fake_ip.cidr",
+          "timeout.connect",
+          "timeout.send",
+          "timeout.recv",
+          "traffic_logging",
+          "child_injection",
+          "child_injection_mode",
+          "proxy_rules.dns_mode",
+          "proxy_rules.ipv6_mode",
+          "proxy_rules.udp_mode",
+          "proxy_rules.udp_fallback",
+          "proxy_rules.routing.enabled",
+          "proxy_rules.routing.priority_mode",
+          "proxy_rules.routing.default_action",
+          "proxy_rules.routing.use_default_private",
+        ];
+
+        const REQUIRED_LIST_CONTAINERS = {
+          "proxy_rules.allowed_ports[]": "allowedPortsList",
+          "target_processes[]": "targetProcessesList",
+          "child_injection_exclude[]": "childExcludeList",
+          "proxy_rules.routing.rules[].ip_cidrs_v4[]": "rule_ip_cidrs_v4",
+          "proxy_rules.routing.rules[].ip_cidrs_v6[]": "rule_ip_cidrs_v6",
+          "proxy_rules.routing.rules[].domains[]": "rule_domains",
+          "proxy_rules.routing.rules[].ports[]": "rule_ports",
+          "proxy_rules.routing.rules[].protocols[]": "rule_protocols",
+        };
+
+        const REQUIRED_RULE_EDITOR_IDS = ["rule_name", "rule_enabled", "rule_action", "rule_priority"];
+
+        const collectSchemaPaths = (obj, prefix = "", out = new Set()) => {
+          if (Array.isArray(obj)) {
+            if (!prefix) return out;
+            if (obj.length === 0) {
+              out.add(`${prefix}[]`);
+              return out;
+            }
+            const first = obj[0];
+            if (first && typeof first === "object" && !Array.isArray(first)) {
+              collectSchemaPaths(first, `${prefix}[]`, out);
+              return out;
+            }
+            out.add(`${prefix}[]`);
+            return out;
+          }
+          if (obj && typeof obj === "object") {
+            Object.keys(obj).forEach((k) => {
+              if (k === "__ui_id") return;
+              const next = prefix ? `${prefix}.${k}` : k;
+              collectSchemaPaths(obj[k], next, out);
+            });
+            return out;
+          }
+          if (prefix) out.add(prefix);
+          return out;
+        };
+
+        const runSchemaDriftCheck = () => {
+          const issues = [];
+
+          // 1) defaultForm 覆盖检查（给 rules 注入样本，避免空数组看不到子字段）
+          const sampleForm = defaultForm();
+          sampleForm.proxy_rules.routing.rules = [defaultRoutingRule(0)];
+          const formPaths = collectSchemaPaths(sampleForm);
+          REQUIRED_CONFIG_PATHS.forEach((p) => {
+            if (!formPaths.has(p)) issues.push(`defaultForm 缺少字段: ${p}`);
+          });
+
+          // 2) exportObject 覆盖检查
+          const savedForm = state.form;
+          const savedBaseRaw = state.baseRaw;
+          try {
+            state.form = deepClone(sampleForm);
+            state.baseRaw = {};
+            const exported = exportObject();
+            if (!Array.isArray(exported?.proxy_rules?.routing?.rules) || exported.proxy_rules.routing.rules.length === 0) {
+              exported.proxy_rules = exported.proxy_rules || {};
+              exported.proxy_rules.routing = exported.proxy_rules.routing || {};
+              exported.proxy_rules.routing.rules = [defaultRoutingRule(0)];
+            }
+            const exportedPaths = collectSchemaPaths(exported);
+            REQUIRED_CONFIG_PATHS.forEach((p) => {
+              if (!exportedPaths.has(p)) issues.push(`exportObject 缺少字段: ${p}`);
+            });
+          } catch (e) {
+            issues.push(`exportObject 检查异常: ${e?.message || String(e)}`);
+          } finally {
+            state.form = savedForm;
+            state.baseRaw = savedBaseRaw;
+          }
+
+          // 3) UI scalar 绑定检查
+          const bindPaths = new Set(
+            $$("[data-bind]")
+              .map((el) => String(el.getAttribute("data-bind") || "").trim())
+              .filter(Boolean)
+          );
+          REQUIRED_DATA_BIND_PATHS.forEach((p) => {
+            if (!bindPaths.has(p)) issues.push(`UI 缺少 data-bind: ${p}`);
+          });
+
+          // 4) 列表容器与规则编辑器检查
+          Object.entries(REQUIRED_LIST_CONTAINERS).forEach(([path, id]) => {
+            if (!$(id)) issues.push(`UI 缺少列表容器: ${path} -> #${id}`);
+          });
+          REQUIRED_RULE_EDITOR_IDS.forEach((id) => {
+            if (!$(id)) issues.push(`UI 缺少规则编辑控件: #${id}`);
+          });
+
+          // 5) validateAll 关键字段标记检查
+          const validateSrc = String(validateAll);
+          const requiredMarkers = [
+            "_build.config",
+            "_build.arch",
+            "log_level",
+            "proxy.host",
+            "proxy.port",
+            "proxy.type",
+            "fake_ip.enabled",
+            "fake_ip.cidr",
+            "timeout.",
+            "traffic_logging",
+            "child_injection",
+            "child_injection_mode",
+            "child_injection_exclude",
+            "target_processes",
+            "proxy_rules.allowed_ports",
+            "proxy_rules.dns_mode",
+            "proxy_rules.ipv6_mode",
+            "proxy_rules.udp_mode",
+            "proxy_rules.udp_fallback",
+            "proxy_rules.routing.enabled",
+            "proxy_rules.routing.priority_mode",
+            "proxy_rules.routing.default_action",
+            "proxy_rules.routing.use_default_private",
+            "${prefix}.name",
+            "${prefix}.enabled",
+            "${prefix}.action",
+            "${prefix}.priority",
+            "${prefix}.ip_cidrs_v4",
+            "${prefix}.ip_cidrs_v6",
+            "${prefix}.domains",
+            "${prefix}.ports",
+            "${prefix}.protocols",
+          ];
+          requiredMarkers.forEach((m) => {
+            if (!validateSrc.includes(m)) issues.push(`validateAll 可能缺少字段校验: ${m}`);
+          });
+
+          state.schemaIssues = issues;
+        };
 
         // -------------------------
         // Export builder (保留未知字段：对象级覆盖已知字段)
@@ -1666,6 +1887,12 @@
           if (!trim(state.form._comment)) warn("_comment", "_comment 为空（不影响功能，但建议保留说明）");
           if (!trim(state.form._version)) warn("_version", "_version 为空（建议填写版本号，便于追踪）");
           if (!trim(state.form?._build?.date)) warn("_build.date", "_build.date 为空（建议刷新）");
+          if (!["Release", "Debug"].includes(String(state.form?._build?.config || ""))) {
+            err("_build.config", "_build.config 必须为 Release/Debug");
+          }
+          if (!["x64", "x86"].includes(String(state.form?._build?.arch || ""))) {
+            err("_build.arch", "_build.arch 必须为 x64/x86");
+          }
 
           // log_level
           if (!["debug", "info", "warn", "error"].includes(state.form.log_level)) {
@@ -1680,6 +1907,7 @@
           if (!["socks5", "http"].includes(state.form.proxy.type)) err("proxy.type", "proxy.type 必须为 socks5/http");
 
           // fake ip
+          if (typeof state.form.fake_ip.enabled !== "boolean") err("fake_ip.enabled", "必须为布尔值");
           const cidr = trim(state.form.fake_ip.cidr);
           if (!cidr) err("fake_ip.cidr", "fake_ip.cidr 不能为空");
           else {
@@ -1692,6 +1920,10 @@
             const v = state.form.timeout[k];
             if (!Number.isInteger(v) || v <= 0) err(`timeout.${k}`, "必须为正整数（毫秒）");
           }
+
+          // phase2/3 scalar
+          if (typeof state.form.traffic_logging !== "boolean") err("traffic_logging", "必须为布尔值");
+          if (typeof state.form.child_injection !== "boolean") err("child_injection", "必须为布尔值");
 
           // child injection mode
           if (!["filtered", "inherit"].includes(state.form.child_injection_mode)) {
@@ -1721,6 +1953,13 @@
           if (!["proxy", "direct", "block"].includes(state.form.proxy_rules.ipv6_mode)) err("proxy_rules.ipv6_mode", "必须为 proxy/direct/block");
           if (!["block", "direct", "proxy"].includes(state.form.proxy_rules.udp_mode)) err("proxy_rules.udp_mode", "必须为 block/direct/proxy");
           if (!["block", "direct"].includes(state.form.proxy_rules.udp_fallback)) err("proxy_rules.udp_fallback", "必须为 block/direct");
+          if (state.form.proxy_rules.udp_mode !== "proxy" && state.form.proxy_rules.udp_fallback !== "block") {
+            warn("proxy_rules.udp_fallback", "仅 udp_mode=proxy 时生效；当前该设置不会生效");
+          }
+
+          // routing bools
+          if (typeof state.form.proxy_rules.routing.enabled !== "boolean") err("proxy_rules.routing.enabled", "必须为布尔值");
+          if (typeof state.form.proxy_rules.routing.use_default_private !== "boolean") err("proxy_rules.routing.use_default_private", "必须为布尔值");
 
           // routing enums
           if (!["order", "number"].includes(state.form.proxy_rules.routing.priority_mode)) err("proxy_rules.routing.priority_mode", "必须为 order/number");
@@ -1731,6 +1970,7 @@
           rules.forEach((r, idx) => {
             const prefix = `proxy_rules.routing.rules[${idx}]`;
             if (!trim(r.name)) err(`${prefix}.name`, "name 不能为空");
+            if (typeof r.enabled !== "boolean") err(`${prefix}.enabled`, "enabled 必须为布尔值");
             if (!["proxy", "direct"].includes(toLower(r.action))) err(`${prefix}.action`, "action 必须为 proxy/direct");
             if (!Number.isInteger(r.priority)) warn(`${prefix}.priority`, "priority 建议为整数");
 
@@ -1817,6 +2057,20 @@
           text.textContent = keys.length > 6 ? `${preview}\n...（共 ${keys.length} 项）` : preview;
         };
 
+        const renderSchemaDriftSummary = () => {
+          const box = $("schemaDriftSummary");
+          const text = $("schemaDriftText");
+          if (!box || !text) return;
+          const issues = state.schemaIssues || [];
+          box.classList.toggle("hidden", issues.length === 0);
+          if (issues.length === 0) {
+            text.textContent = "";
+            return;
+          }
+          const preview = issues.slice(0, 6).map((x) => `- ${x}`).join("\n");
+          text.textContent = issues.length > 6 ? `${preview}\n...（共 ${issues.length} 项）` : preview;
+        };
+
         const renderMetaDate = () => {
           const el = $("meta_build_date");
           if (el) el.textContent = String(state.form?._build?.date ?? "");
@@ -1846,10 +2100,22 @@
             const active = btn.dataset.section === state.ui.section;
             btn.classList.toggle("nav-btn--active", active);
             // 直接用 Tailwind 类控制选中态（避免额外脚本轮询）
-            btn.classList.toggle("bg-sky-500/10", active);
+            btn.classList.toggle("bg-teal-500/10", active);
             btn.classList.toggle("ring-1", active);
-            btn.classList.toggle("ring-sky-500/30", active);
-            btn.classList.toggle("dark:bg-sky-400/10", active);
+            btn.classList.toggle("ring-teal-500/30", active);
+            btn.classList.toggle("dark:bg-teal-400/10", active);
+            btn.classList.toggle("text-teal-800", active);
+            btn.classList.toggle("dark:text-teal-100", active);
+            btn.classList.toggle("shadow-sm", active);
+            btn.classList.toggle("shadow-teal-700/20", active);
+            const ico = btn.querySelector(".nav-ico");
+            if (ico) {
+              ico.classList.toggle("bg-teal-500/15", active);
+              ico.classList.toggle("text-teal-700", active);
+              ico.classList.toggle("ring-teal-500/40", active);
+              ico.classList.toggle("dark:bg-teal-400/15", active);
+              ico.classList.toggle("dark:text-teal-200", active);
+            }
           });
         };
 
@@ -1903,14 +2169,14 @@
 
             const handle = document.createElement("button");
             handle.type = "button";
-            handle.className = "mt-2 rounded-md px-2 py-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/60";
+            handle.className = "mt-1.5 inline-flex min-h-10 min-w-10 items-center justify-center rounded-md px-2 py-1 text-slate-500 transition duration-200 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/60";
             handle.title = "拖拽排序";
             handle.innerHTML = '<i class="fa-solid fa-grip-vertical"></i>';
             row.appendChild(handle);
 
             const input = document.createElement("input");
             input.className =
-              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none ring-sky-500/30 focus:ring-4 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-100";
+              "w-full min-h-[44px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none ring-teal-500/30 focus:ring-4 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-100";
             input.type = itemType === "number" ? "number" : "text";
             if (itemType === "number") {
               input.min = "1";
@@ -2031,7 +2297,7 @@
               "group mb-1 flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-950/30";
             const active = r.__ui_id === state.selectedRuleId;
             if (active) {
-              li.className += " bg-sky-500/10 ring-1 ring-sky-500/30 dark:bg-sky-400/10";
+              li.className += " bg-teal-500/10 ring-1 ring-teal-500/30 dark:bg-teal-400/10";
             }
             li.draggable = true;
 
@@ -2130,6 +2396,7 @@
             el.classList.toggle("hidden", !msg);
           };
           setLocalErr("__rule.name", `${prefix}.name`);
+          setLocalErr("__rule.enabled", `${prefix}.enabled`);
           setLocalErr("__rule.action", `${prefix}.action`);
           setLocalErr("__rule.priority", `${prefix}.priority`);
 
@@ -2180,14 +2447,14 @@
 
             const handle = document.createElement("button");
             handle.type = "button";
-            handle.className = "mt-2 rounded-md px-2 py-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/60";
+            handle.className = "mt-1.5 inline-flex min-h-10 min-w-10 items-center justify-center rounded-md px-2 py-1 text-slate-500 transition duration-200 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/60";
             handle.title = "拖拽排序";
             handle.innerHTML = '<i class="fa-solid fa-grip-vertical"></i>';
             row.appendChild(handle);
 
             const input = document.createElement("input");
             input.className =
-              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none ring-sky-500/30 focus:ring-4 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-100";
+              "w-full min-h-[44px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none ring-teal-500/30 focus:ring-4 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-100";
             input.type = itemType === "number" ? "number" : "text";
             if (itemType === "number") {
               input.min = "1";
@@ -2273,6 +2540,7 @@
           renderStatus();
           renderStats();
           renderErrorSummary();
+          renderSchemaDriftSummary();
           renderFieldErrors();
           renderJsonPreview();
           renderSelectedRuleMessages();
@@ -2966,14 +3234,14 @@
               zone.addEventListener(evt, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                zone.classList.add("ring-4", "ring-sky-500/20");
+                zone.classList.add("ring-4", "ring-teal-500/20");
               });
             });
             ["dragleave", "drop"].forEach((evt) => {
               zone.addEventListener(evt, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                zone.classList.remove("ring-4", "ring-sky-500/20");
+                zone.classList.remove("ring-4", "ring-teal-500/20");
               });
             });
             zone.addEventListener("drop", async (e) => {
@@ -3031,27 +3299,57 @@
           applyTheme(theme);
 
           // nav base styles
-          $$("button.nav-btn").forEach((btn) => {
-            btn.classList.add(
-              "flex",
-              "items-center",
-              "gap-2",
-              "rounded-lg",
-              "px-3",
-              "py-2",
-              "text-sm",
-              "text-slate-700",
-              "hover:bg-slate-100",
-              "dark:text-slate-200",
-              "dark:hover:bg-slate-800/60"
-            );
-          });
+        $$("button.nav-btn").forEach((btn) => {
+          btn.classList.add(
+            "flex",
+            "items-center",
+            "gap-2",
+            "rounded-xl",
+            "min-h-11",
+            "px-3",
+            "py-2",
+            "text-sm",
+            "text-slate-700",
+            "transition",
+            "duration-200",
+            "hover:-translate-y-0.5",
+            "active:translate-y-0",
+            "motion-reduce:transform-none",
+            "hover:bg-slate-100",
+            "dark:text-slate-200",
+            "dark:hover:bg-slate-800/60"
+          );
+        });
+        $$("button.nav-btn .nav-ico").forEach((ico) => {
+          ico.classList.add(
+            "inline-flex",
+            "h-8",
+            "w-8",
+            "items-center",
+            "justify-center",
+            "rounded-lg",
+            "bg-slate-100",
+            "text-slate-500",
+            "ring-1",
+            "ring-slate-200",
+            "dark:bg-slate-800/70",
+            "dark:text-slate-300",
+            "dark:ring-slate-700"
+          );
+        });
 
           bindNav();
           bindDataInputs();
           bindRuleEditor();
           bindActions();
           bindDragDrop();
+
+          // 前端字段漂移自检（不阻断使用，但会给出可见提示）
+          runSchemaDriftCheck();
+          if ((state.schemaIssues || []).length > 0) {
+            console.warn("[SchemaDriftCheck]", state.schemaIssues);
+            ui.toast(`字段同步自检发现 ${state.schemaIssues.length} 个潜在问题，请检查侧栏提示`, "warn");
+          }
 
           // 自动载入默认模板（跳过空态，提升首次体验）
           // 用户仍可通过"导入"覆盖，或点击"重置"回到空态
@@ -3070,7 +3368,7 @@
 
         // panel styles
         $$("section.panel").forEach((p) => {
-          p.classList.add("rounded-lg", "border", "border-slate-200", "bg-white", "shadow-md", "shadow-slate-900/5", "dark:border-slate-800", "dark:bg-slate-900/40", "dark:shadow-black/20");
+          p.classList.add("rounded-2xl", "border", "border-slate-200", "bg-white/85", "shadow-md", "shadow-slate-900/5", "backdrop-blur-sm", "dark:border-slate-800", "dark:bg-slate-900/40", "dark:shadow-black/20");
         });
         $$("section.panel .panel-hd").forEach((hd) => {
           hd.classList.add("flex", "flex-col", "gap-3", "border-b", "border-slate-200", "px-5", "py-4", "dark:border-slate-800", "md:flex-row", "md:items-center", "md:justify-between");
@@ -3087,20 +3385,20 @@
 
         // buttons
         $$("button.btn").forEach((b) => {
-          b.classList.add("inline-flex", "items-center", "gap-2", "rounded-lg", "px-3", "py-2", "text-sm", "shadow-sm");
+          b.classList.add("inline-flex", "min-h-11", "items-center", "gap-2", "rounded-xl", "px-3", "py-2", "text-sm", "shadow-sm", "transition", "duration-200", "hover:-translate-y-0.5", "active:translate-y-0", "motion-reduce:transform-none");
         });
         $$("button.btn-ghost").forEach((b) => {
           b.classList.add("border", "border-slate-200", "bg-white", "text-slate-700", "hover:bg-slate-50", "dark:border-slate-800", "dark:bg-slate-950/30", "dark:text-slate-200", "dark:hover:bg-slate-800/60");
         });
         $$("button.btn-primary").forEach((b) => {
-          b.classList.add("bg-sky-600", "text-white", "shadow-md", "shadow-sky-600/20", "hover:bg-sky-500");
+          b.classList.add("bg-teal-700", "text-white", "shadow-md", "shadow-teal-700/20", "hover:bg-teal-600");
         });
         $$("button.btn-danger").forEach((b) => {
           b.classList.add("bg-rose-600", "text-white", "shadow-md", "shadow-rose-600/20", "hover:bg-rose-500");
         });
         $$("button.btn-sm").forEach((b) => {
           b.classList.remove("px-3", "py-2", "text-sm");
-          b.classList.add("px-2", "py-1", "text-xs");
+          b.classList.add("min-h-10", "px-2", "py-1.5", "text-xs");
         });
 
         // preset cards
@@ -3113,6 +3411,10 @@
             "p-4",
             "text-left",
             "shadow-sm",
+            "transition",
+            "duration-200",
+            "hover:-translate-y-0.5",
+            "motion-reduce:transform-none",
             "hover:bg-white",
             "dark:border-slate-800",
             "dark:bg-slate-950/30",
@@ -3128,6 +3430,7 @@
         $$("input.field-input, select.field-input").forEach((i) =>
           i.classList.add(
             "w-full",
+            "min-h-[44px]",
             "rounded-lg",
             "border",
             "border-slate-200",
@@ -3138,7 +3441,7 @@
             "text-slate-900",
             "shadow-sm",
             "outline-none",
-            "ring-sky-500/30",
+            "ring-teal-500/30",
             "focus:ring-4",
             "dark:border-slate-800",
             "dark:bg-slate-950/40",
@@ -3150,7 +3453,7 @@
         });
 
         // toggle (pure Tailwind)
-        $$("label.toggle").forEach((t) => t.classList.add("inline-flex", "items-center", "gap-3"));
+        $$("label.toggle").forEach((t) => t.classList.add("inline-flex", "min-h-11", "items-center", "gap-3"));
         $$("label.toggle input[type=checkbox]").forEach((i) => i.classList.add("peer", "hidden"));
         $$("label.toggle span.toggle-ui").forEach((ui) => {
           ui.classList.add(
@@ -3163,8 +3466,8 @@
             "ring-1",
             "ring-slate-300",
             "transition",
-            "peer-checked:bg-sky-600",
-            "peer-checked:ring-sky-500/40",
+            "peer-checked:bg-teal-600",
+            "peer-checked:ring-teal-500/40",
             "dark:bg-slate-800",
             "dark:ring-slate-700"
           );
@@ -3218,4 +3521,3 @@
   </div>
 </body>
 </html>
-
