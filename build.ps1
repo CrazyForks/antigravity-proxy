@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 #  Antigravity-Proxy 编译脚本
 #  PowerShell Build Script for Windows
 # ============================================================
@@ -177,9 +177,35 @@ try {
     } else {
         $cmakeArgs += "-DSTATIC_RUNTIME=OFF"
     }
-    
+
     $cmakeResult = & cmake @cmakeArgs 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    $cmakeFailed = ($LASTEXITCODE -ne 0)
+
+    # 处理项目目录迁移后的旧缓存：自动清理并重试一次
+    if ($cmakeFailed) {
+        # 兼容 Windows PowerShell 5.1:
+        # - 2>&1 可能返回 ErrorRecord 而非纯字符串
+        # - 输出可能按控制台宽度换行，导致关键句子被拆断
+        $cmakeText = (($cmakeResult | ForEach-Object { $_.ToString() }) -join "`n")
+        $cmakeTextNormalized = [regex]::Replace($cmakeText, "\s+", " ")
+        $isCacheMismatch = $cmakeTextNormalized -match "CMakeCache\.txt directory .* is different than the directory" -or
+                          $cmakeTextNormalized -match "does not match the source .* used to generate cache"
+
+        if ($isCacheMismatch) {
+            Pop-Location
+            Write-Step "检测到 CMake 缓存路径不匹配，自动清理构建目录后重试..."
+            if (Test-Path $BuildDir) {
+                Remove-Item -Recurse -Force $BuildDir
+            }
+            New-Item -ItemType Directory -Path $BuildDir | Out-Null
+
+            Push-Location $BuildDir
+            $cmakeResult = & cmake @cmakeArgs 2>&1
+            $cmakeFailed = ($LASTEXITCODE -ne 0)
+        }
+    }
+
+    if ($cmakeFailed) {
         Write-Error "CMake 配置失败"
         Write-Host $cmakeResult -ForegroundColor Red
         exit 1
