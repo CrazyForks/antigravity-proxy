@@ -57,6 +57,38 @@
       "category": "Context",
       "created_at": "2026-02-03T11:28:47.989762900Z",
       "updated_at": "2026-02-03T11:28:47.989762900Z"
+    },
+    {
+      "id": "24f15b1a-96e7-41eb-b4a8-4fae14b24d98",
+      "content": "用户最新偏好：允许在合适时生成总结性 Markdown 文档、测试脚本、执行编译与运行；若任务需要，可主动协助完成。",
+      "content_normalized": "用户最新偏好允许在合适时生成总结性 markdown 文档测试脚本执行编译与运行若任务需要可主动协助完成",
+      "category": "Preference",
+      "created_at": "2026-04-22T09:19:44.604543100Z",
+      "updated_at": "2026-04-22T09:19:44.604543100Z"
+    },
+    {
+      "id": "cb09ad79-446e-484a-a011-263abbc59026",
+      "content": "用户要求：优先使用 sou 进行代码语义搜索定位，再读取具体代码；需要最新框架/库信息时优先使用 context7。",
+      "content_normalized": "用户要求优先使用 sou 进行代码语义搜索定位再读取具体代码需要最新框架/库信息时优先使用 context7",
+      "category": "Rule",
+      "created_at": "2026-04-22T09:19:44.609793500Z",
+      "updated_at": "2026-04-22T09:19:44.609793500Z"
+    },
+    {
+      "id": "9a29de44-352c-4706-a041-58458125f52f",
+      "content": "2026-04-22 排障结论：当前 Antigravity 对话异常的直接错误来自应用侧语言服务器返回 `FAILED_PRECONDITION (code 400): User location is not supported for the API use.`；DLL 代理链路已生效并成功建立到 oauth2.googleapis.com / daily-cloudcode-pa.googleapis.com 的 SOCKS5 隧道。代码侧次要风险是 child_injection_mode=filtered 会跳过 language_server 的 node.exe 子进程。",
+      "content_normalized": "2026-04-22 排障结论当前 antigravity 对话异常的直接错误来自应用侧语言服务器返回 `failed_precondition code 400 user location is not supported for the api use`dll 代理链路已生效并成功建立到 oauth2googleapiscom / daily-cloudcode-pagoogleapiscom 的 socks5 隧道代码侧次要风险是 child_injection_mode=filtered 会跳过 language_server 的 nodeexe 子进程",
+      "category": "Context",
+      "created_at": "2026-04-22T09:19:44.616193200Z",
+      "updated_at": "2026-04-22T09:19:44.616193200Z"
+    },
+    {
+      "id": "48056c07-3319-4201-b6d7-d2c3605f17ef",
+      "content": "2026-04-22 深挖结论：node.exe 兼容注入补丁已验证生效，但 Antigravity 对话仍报 `FAILED_PRECONDITION (code 400): User location is not supported for the API use.`。进一步确认当前 agent mode 路径关联 `C:\\Users\\yuaotian\\.gemini\\settings.json` 中的 `selectedAuthType=oauth-personal`。最终通过更换代理出口 IP 后恢复，说明该问题与出口 IP/ASN（机房/托管特征）强相关，而非 DLL 注入失效。",
+      "content_normalized": "2026-04-22 深挖结论nodeexe 兼容注入补丁已验证生效但 antigravity 对话仍报 `failed_precondition code 400 user location is not supported for the api use`进一步确认当前 agent mode 路径关联 `c\\users\\yuaotian\\gemini\\settingsjson` 中的 `selectedauthtype=oauth-personal`最终通过更换代理出口 ip 后恢复说明该问题与出口 ip/asn机房/托管特征强相关而非 dll 注入失效",
+      "category": "Context",
+      "created_at": "2026-04-22T11:31:08.820825Z",
+      "updated_at": "2026-04-22T11:31:08.820825Z"
     }
   ],
   "last_dedup_at": "2026-02-03T11:28:47.985421800Z",

@@ -25,6 +25,7 @@
 ## 📖 目录 / Table of Contents
 
 - [📖 项目介绍 / Introduction](#-项目介绍--introduction)
+- [🚨 先看这个：对话报错先排 IP / Read This First](#-先看这个对话报错先排-ip--read-this-first)
 - [⚡ Antigravity 快速开始 / Quick Start](#-antigravity-快速开始--quick-start)
 - [🔧 故障排查自查手册 / Troubleshooting Guide](#-故障排查自查手册--troubleshooting-guide)
 - [✨ 功能特性 / Features](#-功能特性--features)
@@ -35,6 +36,64 @@
 - [🚀 进阶玩法 / Advanced Usage](#-进阶玩法--advanced-usage)
 - [📄 许可证 / License](#-许可证--license)
 - [👤 关于作者 / Author](#-关于作者--author)
+
+---
+
+## 🚨 先看这个：对话报错先排 IP / Read This First
+
+> **先说结论：如果 Antigravity 的对话框里出现 `Agent execution terminated due to error`，请先排查代理出口 IP，不要先怀疑 DLL 没生效。**
+
+我们已经在真实现场里确认过，最容易误判的场景是：
+- `version.dll` 已加载
+- `language_server_windows_x64.exe` 已注入
+- `node.exe` 也已注入
+- `oauth2.googleapis.com` / `daily-cloudcode-pa.googleapis.com` 仍然可以通过 SOCKS5 正常连通
+- **但 Antigravity 自己的 `ls-main.log` 仍然返回：**
+  - `FAILED_PRECONDITION (code 400): User location is not supported for the API use.`
+
+这类问题的主因通常不是 DLL 失效，而是：
+- **当前代理出口 IP 的国家/ASN/机房属性，被 Antigravity agent mode / Gemini CLI 路径判定为不可用**
+- 也就是说：**“国家支持”不等于“当前这条 agent 执行链路一定接受这条出口 IP”**
+
+### 你现在应该先看哪两份日志
+
+#### 1. DLL 日志：证明“不是注入失效”
+- `<Antigravity安装目录>\\logs\\proxy-YYYYMMDD.log`
+
+如果你在这份日志里看到类似下面这些关键行，说明 DLL 本身已经在工作：
+- `[成功] 已注入目标进程: language_server_windows_x64.exe`
+- `[成功] 已注入目标进程: node.exe`
+- `SOCKS5: 隧道建立成功, 目标=oauth2.googleapis.com:443`
+- `SOCKS5: 隧道建立成功, 目标=daily-cloudcode-pa.googleapis.com:443`
+
+从当前版本开始，DLL 还会额外输出 IP 诊断日志：
+- `[诊断/IP] 当前代理出口探测完成: ...`
+- `[诊断/IP] 当前代理出口呈现机房/托管特征...`
+- `[诊断/IP] 最新 Antigravity 日志已命中 location 限制错误，同时当前代理出口呈现机房/托管特征...`
+
+#### 2. Antigravity 应用日志：证明“真正失败的是 agent 执行链路”
+- `%APPDATA%\\Antigravity\\logs\\<最新时间目录>\\ls-main.log`
+
+如果你在这里看到：
+- `agent executor error: FAILED_PRECONDITION (code 400): User location is not supported for the API use.`
+
+那就说明：
+- **当前失败点已经不是 DLL 注入或基本代理链路**
+- **而是 Antigravity 自己的 agent execution 路径被服务端按 location / egress 策略拦住了**
+
+### 最有效的排查顺序
+
+1. 先看 `proxy-YYYYMMDD.log`
+   - 如果注入和 SOCKS5 都成功，说明 DLL 大概率没问题。
+2. 再看 `%APPDATA%\\Antigravity\\logs\\<最新目录>\\ls-main.log`
+   - 如果有 `User location is not supported for the API use.`，优先排 IP。
+3. 优先更换**非机房 / 非托管 / 普通 ISP / 住宅**出口，再重试
+   - 同一个国家（例如新加坡）下，不同 ASN / 不同类型出口，结果可能完全不同。
+4. 只有当 DLL 日志里根本没有注入成功、或根本没有代理握手成功时，才回头排 DLL。
+
+### 一句话记忆点
+
+> **Antigravity 对话报错时，先排出口 IP，再排 DLL。看到 `location is not supported` 基本优先看 IP。**
 
 ---
 

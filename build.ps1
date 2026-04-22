@@ -323,7 +323,7 @@ $configJson = @{
     # 子进程注入排除列表（大小写不敏感，支持子串匹配）
     child_injection_exclude = @()
     # 目标进程列表（空数组=注入所有子进程）
-    target_processes = @("language_server_windows", "Antigravity.exe")
+    target_processes = @("language_server_windows", "Antigravity.exe", "node.exe")
     proxy_rules = @{
         # 端口白名单: 仅代理 HTTP(80) 和 HTTPS(443)，空数组=代理所有端口
         allowed_ports = @(80, 443)
@@ -360,6 +360,36 @@ $usageDoc = @'
 ## 概述
 Antigravity-Proxy 是一个基于 MinHook 的 Windows DLL 代理注入工具。
 通过劫持 version.dll，可以透明地将目标进程的网络流量重定向到代理服务器。
+
+## 先看这个：对话报错先排 IP
+
+> **如果 Antigravity 对话时报 `Agent execution terminated due to error`，请先排查代理出口 IP，不要先默认怀疑 DLL 没生效。**
+
+最容易误判的真实场景是：
+- DLL 已加载成功
+- `language_server_windows_x64.exe` 已注入成功
+- `node.exe` 已注入成功
+- `oauth2.googleapis.com` / `daily-cloudcode-pa.googleapis.com` 仍能通过 SOCKS5 正常连通
+- 但 `%APPDATA%\Antigravity\logs\<最新目录>\ls-main.log` 返回：
+
+```
+FAILED_PRECONDITION (code 400): User location is not supported for the API use.
+```
+
+这时主因通常不是 DLL，而是：
+- 当前代理出口 IP 的国家/ASN/机房属性，被 Antigravity agent mode / Gemini CLI 路径判定为不可用
+- 也就是说：**国家支持不等于当前这条 agent 执行链路一定接受这条出口 IP**
+
+当前版本开始，DLL 会额外输出诊断日志：
+- `[诊断/IP] 当前代理出口探测完成: ...`
+- `[诊断/IP] 当前代理出口呈现机房/托管特征...`
+- `[诊断/IP] 最新 Antigravity 日志已命中 location 限制错误，同时当前代理出口呈现机房/托管特征...`
+
+建议的排查顺序：
+1. 先看 `proxy-YYYYMMDD.log`，确认注入和 SOCKS5 是否成功
+2. 再看 `%APPDATA%\Antigravity\logs\<最新目录>\ls-main.log`，确认是否命中 `User location is not supported for the API use.`
+3. 如果命中，优先更换**非机房 / 非托管 / 普通 ISP / 住宅**出口，再重试
+4. 只有 DLL 日志里根本没有注入成功、或根本没有代理握手成功时，才回头排 DLL
 
 ## 快速开始
 
@@ -477,7 +507,7 @@ Test-NetConnection -ComputerName 127.0.0.1 -Port 7890
 ### 配置示例
 ```json
 {
-    "target_processes": ["language_server_windows", "Antigravity.exe"],
+    "target_processes": ["language_server_windows", "Antigravity.exe", "node.exe"],
     "child_injection_mode": "filtered",
     "child_injection_exclude": ["unwanted_process.exe"]
 }
@@ -530,6 +560,9 @@ A: 确保使用正确的架构版本 (x64 程序用 x64 DLL，x86 程序用 x86 
 
 ### Q: 网络连接失败？
 A: 检查代理服务器是否正常运行，且端口配置正确。
+
+### Q: 对话时报 `Agent execution terminated due to error`，但 DLL 日志看起来都正常？
+A: 先去看 `%APPDATA%\Antigravity\logs\<最新目录>\ls-main.log`。如果里面出现 `User location is not supported for the API use.`，优先排查代理出口 IP / ASN / 机房属性，而不是继续怀疑 DLL 失效。
 
 ### Q: 如何验证 DLL 是否生效？
 A: 检查目标程序目录是否生成 `proxy.log` 文件。

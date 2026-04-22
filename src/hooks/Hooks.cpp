@@ -8,8 +8,10 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <mswsock.h>
+#include <algorithm>
 #include <charconv>
 #include <cctype>
+#include <fstream>
 #include <string_view>
 #include <unordered_map>
 #include <mutex>
@@ -198,6 +200,7 @@ struct UdpOverlappedRecvCtx {
 static std::unordered_map<LPWSAOVERLAPPED, std::shared_ptr<UdpOverlappedSendCtx>> g_udpOvlSend;
 static std::unordered_map<LPWSAOVERLAPPED, std::shared_ptr<UdpOverlappedRecvCtx>> g_udpOvlRecv;
 static std::mutex g_udpOvlMtx;
+static SOCKET ConnectTcpToProxyServer(const Core::ProxyConfig& proxy);
 
 // 为了避免日志被大量非目标进程淹没，这里仅首次记录“跳过注入”的进程名
 static std::unordered_map<std::string, bool> g_loggedSkipProcesses;
@@ -206,6 +209,11 @@ static const size_t kMaxLoggedSkipProcesses = 256; // 限制缓存规模，避�
 
 // 运行时配置摘要仅打印一次，方便收集“别人不行”的现场信息
 static std::once_flag g_runtimeConfigLogOnce;
+// 新版 Antigravity 可能把部分对话链路下沉到 language_server_windows 派生的 node.exe；
+// 这里仅对该组合做一次兼容提示，避免 filtered 模式下静默漏注入。
+static std::once_flag g_languageServerNodeCompatLogOnce;
+// IP/日志联合诊断只需要在主 Antigravity 进程里启动一次。
+static std::once_flag g_agentIpDiagnosisThreadOnce;
 
 static std::string WideToUtf8(PCWSTR input) {
     if (!input) return "";
@@ -265,6 +273,387 @@ static bool TryGetSocketType(SOCKET s, int* outType) {
     }
     *outType = soType;
     return true;
+}
+
+static std::string ToLowerAsciiCopy(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) { return (char)std::tolower(c); });
+    return s;
+}
+
+static std::string GetCurrentProcessBaseName() {
+    static std::string s_cached;
+    static std::once_flag s_once;
+    std::call_once(s_once, []() {
+        char modulePath[MAX_PATH] = {0};
+        const DWORD len = GetModuleFileNameA(NULL, modulePath, MAX_PATH);
+        if (len == 0 || len >= MAX_PATH) {
+            return;
+        }
+        s_cached.assign(modulePath, len);
+        const size_t lastSlash = s_cached.find_last_of("\\/");
+        if (lastSlash != std::string::npos) {
+            s_cached = s_cached.substr(lastSlash + 1);
+        }
+    });
+    return s_cached;
+}
+
+struct AgentExitIpEvidence {
+    bool success = false;
+    bool datacenterLike = false;
+    std::string source = "ipinfo.io";
+    std::string ip;
+    std::string prefix;
+    std::string country;
+    std::string region;
+    std::string org;
+    std::string error;
+};
+
+struct AntLocationEvidence {
+    bool logsAvailable = false;
+    bool matched = false;
+    std::string logPath;
+    std::string matchedLine;
+};
+
+static bool IsCurrentAntigravityMainProcess() {
+    return ToLowerAsciiCopy(GetCurrentProcessBaseName()) == "antigravity.exe";
+}
+
+static void CloseSocketCompat(SOCKET s) {
+    if (s == INVALID_SOCKET) return;
+    if (fpCloseSocket) {
+        fpCloseSocket(s);
+    } else {
+        closesocket(s);
+    }
+}
+
+static bool TryGetEnvVar(const char* name, std::string* out) {
+    if (!name || !out) return false;
+    char buf[32767] = {0};
+    const DWORD len = GetEnvironmentVariableA(name, buf, sizeof(buf));
+    if (len == 0 || len >= sizeof(buf)) return false;
+    out->assign(buf, len);
+    return true;
+}
+
+static std::string BuildIpv4Prefix24(const std::string& ip) {
+    size_t dot1 = ip.find('.');
+    if (dot1 == std::string::npos) return "";
+    size_t dot2 = ip.find('.', dot1 + 1);
+    if (dot2 == std::string::npos) return "";
+    size_t dot3 = ip.find('.', dot2 + 1);
+    if (dot3 == std::string::npos) return "";
+    return ip.substr(0, dot3) + ".0/24";
+}
+
+static bool LooksLikeDatacenterOrg(const std::string& org) {
+    const std::string lower = ToLowerAsciiCopy(org);
+    static const char* kKeywords[] = {
+        "g-core", "digitalocean", "linode", "vultr", "hetzner", "ovh", "leaseweb",
+        "contabo", "choopa", "scaleway", "oracle cloud", "google cloud", "azure",
+        "amazon", "aws", "alibaba cloud", "tencent cloud", "cloudflare", "datacenter",
+        "data center", "hosting", "colo", "colocation", "server"
+    };
+    for (const char* keyword : kKeywords) {
+        if (lower.find(keyword) != std::string::npos) return true;
+    }
+    return false;
+}
+
+static std::string BuildIpInfoHttpRequest(bool viaHttpProxy) {
+    std::ostringstream oss;
+    oss << "GET ";
+    if (viaHttpProxy) {
+        oss << "http://ipinfo.io/json";
+    } else {
+        oss << "/json";
+    }
+    oss << " HTTP/1.1\r\n";
+    oss << "Host: ipinfo.io\r\n";
+    oss << "Connection: close\r\n";
+    oss << "User-Agent: antigravity-proxy/1.8\r\n";
+    oss << "\r\n";
+    return oss.str();
+}
+
+static bool ReadHttpResponseToString(SOCKET sock, int maxBytes, std::string* out) {
+    if (!out) return false;
+    out->clear();
+    char buf[1024];
+    while ((int)out->size() < maxBytes) {
+        const int want = (int)std::min<size_t>(sizeof(buf), (size_t)(maxBytes - (int)out->size()));
+        int n = recv(sock, buf, want, 0);
+        if (n > 0) {
+            out->append(buf, n);
+            continue;
+        }
+        if (n == 0) {
+            return true;
+        }
+        const int err = WSAGetLastError();
+        if (err == WSAETIMEDOUT && out->find("\r\n\r\n") != std::string::npos) {
+            return true;
+        }
+        return false;
+    }
+    WSASetLastError(WSAEMSGSIZE);
+    return false;
+}
+
+static int ParseHttpStatusCode(const std::string& response) {
+    const size_t lineEnd = response.find("\r\n");
+    const std::string firstLine = response.substr(0, lineEnd);
+    size_t firstSpace = firstLine.find(' ');
+    if (firstSpace == std::string::npos) return -1;
+    size_t secondSpace = firstLine.find(' ', firstSpace + 1);
+    const std::string codeStr = firstLine.substr(firstSpace + 1, secondSpace == std::string::npos ? std::string::npos : (secondSpace - firstSpace - 1));
+    if (codeStr.size() != 3) return -1;
+    return atoi(codeStr.c_str());
+}
+
+static std::string ExtractHttpBody(const std::string& response) {
+    const size_t pos = response.find("\r\n\r\n");
+    if (pos == std::string::npos) return "";
+    return response.substr(pos + 4);
+}
+
+static AgentExitIpEvidence ProbeProxyExitIpEvidence() {
+    AgentExitIpEvidence evidence;
+    auto& config = Core::Config::Instance();
+    if (config.proxy.port == 0 || config.proxy.host.empty()) {
+        evidence.error = "proxy not configured";
+        return evidence;
+    }
+
+    SOCKET sock = ConnectTcpToProxyServer(config.proxy);
+    if (sock == INVALID_SOCKET) {
+        evidence.error = "connect proxy failed, WSA=" + std::to_string(WSAGetLastError());
+        return evidence;
+    }
+
+    Network::SocketWrapper wrapped(sock);
+    wrapped.SetTimeouts(config.timeout.recv_ms, config.timeout.send_ms);
+
+    bool ready = false;
+    const std::string proxyType = ToLowerAsciiCopy(config.proxy.type);
+    if (proxyType == "socks5") {
+        ready = Network::Socks5Client::Handshake(sock, "ipinfo.io", 80);
+    } else if (proxyType == "http") {
+        ready = true;
+    } else {
+        evidence.error = "unsupported proxy.type=" + config.proxy.type;
+    }
+
+    if (!ready) {
+        if (evidence.error.empty()) {
+            evidence.error = "proxy handshake failed, WSA=" + std::to_string(WSAGetLastError());
+        }
+        CloseSocketCompat(sock);
+        return evidence;
+    }
+
+    const std::string request = BuildIpInfoHttpRequest(proxyType == "http");
+    if (!Network::SocketIo::SendAll(sock, request.c_str(), (int)request.size(), config.timeout.send_ms)) {
+        evidence.error = "send ip probe failed, WSA=" + std::to_string(WSAGetLastError());
+        CloseSocketCompat(sock);
+        return evidence;
+    }
+
+    std::string response;
+    if (!ReadHttpResponseToString(sock, 8192, &response)) {
+        evidence.error = "recv ip probe failed, WSA=" + std::to_string(WSAGetLastError());
+        CloseSocketCompat(sock);
+        return evidence;
+    }
+    CloseSocketCompat(sock);
+
+    const int statusCode = ParseHttpStatusCode(response);
+    if (statusCode != 200) {
+        evidence.error = "ip probe http status=" + std::to_string(statusCode);
+        return evidence;
+    }
+
+    const std::string body = ExtractHttpBody(response);
+    auto json = nlohmann::json::parse(body, nullptr, false);
+    if (json.is_discarded() || !json.is_object()) {
+        evidence.error = "ip probe json parse failed";
+        return evidence;
+    }
+
+    evidence.ip = json.value("ip", "");
+    evidence.country = json.value("country", json.value("country_iso", ""));
+    evidence.region = json.value("region", json.value("city", ""));
+    evidence.org = json.value("org", json.value("asn_org", ""));
+    evidence.prefix = BuildIpv4Prefix24(evidence.ip);
+    evidence.datacenterLike = LooksLikeDatacenterOrg(evidence.org);
+    evidence.success = !evidence.ip.empty();
+    if (!evidence.success) {
+        evidence.error = "ip probe missing ip field";
+    }
+    return evidence;
+}
+
+static bool TryGetLatestAntLogDir(std::string* outDir) {
+    if (!outDir) return false;
+    std::string appData;
+    if (!TryGetEnvVar("APPDATA", &appData) || appData.empty()) return false;
+
+    const std::string logsRoot = appData + "\\Antigravity\\logs";
+    const std::string pattern = logsRoot + "\\*";
+
+    WIN32_FIND_DATAA findData{};
+    HANDLE hFind = FindFirstFileA(pattern.c_str(), &findData);
+    if (hFind == INVALID_HANDLE_VALUE) return false;
+
+    bool found = false;
+    FILETIME newestWrite{};
+    std::string newestDir;
+    do {
+        if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) continue;
+        const std::string name = findData.cFileName;
+        if (name == "." || name == "..") continue;
+        if (!found || CompareFileTime(&findData.ftLastWriteTime, &newestWrite) > 0) {
+            newestWrite = findData.ftLastWriteTime;
+            newestDir = logsRoot + "\\" + name;
+            found = true;
+        }
+    } while (FindNextFileA(hFind, &findData));
+    FindClose(hFind);
+
+    if (!found) return false;
+    *outDir = newestDir;
+    return true;
+}
+
+static AntLocationEvidence CollectLatestAntLocationEvidence() {
+    AntLocationEvidence evidence;
+    std::string latestDir;
+    if (!TryGetLatestAntLogDir(&latestDir)) {
+        return evidence;
+    }
+
+    const std::string logPath = latestDir + "\\ls-main.log";
+    std::ifstream in(logPath, std::ios::in | std::ios::binary);
+    if (!in.is_open()) {
+        return evidence;
+    }
+
+    evidence.logsAvailable = true;
+    evidence.logPath = logPath;
+
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.find("User location is not supported for the API use") != std::string::npos ||
+            line.find("FAILED_PRECONDITION (code 400)") != std::string::npos) {
+            evidence.matched = true;
+            evidence.matchedLine = line;
+            return evidence;
+        }
+    }
+    return evidence;
+}
+
+static void LogAgentIpDiagnosisResult(const AgentExitIpEvidence& ipEvidence, const AntLocationEvidence& logEvidence) {
+    std::ostringstream ipSummary;
+    if (ipEvidence.success) {
+        ipSummary << "ip=" << ipEvidence.ip;
+        if (!ipEvidence.prefix.empty()) ipSummary << ", prefix=" << ipEvidence.prefix;
+        if (!ipEvidence.country.empty()) ipSummary << ", country=" << ipEvidence.country;
+        if (!ipEvidence.region.empty()) ipSummary << ", region=" << ipEvidence.region;
+        if (!ipEvidence.org.empty()) ipSummary << ", org=" << ipEvidence.org;
+    } else {
+        ipSummary << "ip-probe-failed";
+        if (!ipEvidence.error.empty()) ipSummary << ", reason=" << ipEvidence.error;
+    }
+
+    if (logEvidence.matched) {
+        if (ipEvidence.success && ipEvidence.datacenterLike) {
+            Core::Logger::Warn(
+                "[诊断/IP] 最新 Antigravity 日志已命中 location 限制错误，同时当前代理出口呈现机房/托管特征。"
+                " 综合判断：本次 agent 对话失败很可能由出口 IP 导致，而非 DLL 注入失效。 " +
+                ipSummary.str() + ", ls-main=" + logEvidence.logPath);
+        } else if (ipEvidence.success) {
+            Core::Logger::Warn(
+                "[诊断/IP] 最新 Antigravity 日志已命中 location 限制错误。当前代理出口信息如下："
+                "国家码支持并不等于该 agent 路径一定可用，请优先更换出口 IP/认证路径再试。 " +
+                ipSummary.str() + ", ls-main=" + logEvidence.logPath);
+        } else {
+            Core::Logger::Warn(
+                "[诊断/IP] 最新 Antigravity 日志已命中 location 限制错误，但当前无法探测代理出口 IP。"
+                " 请优先排查代理出口/机房 IP。 ls-main=" + logEvidence.logPath);
+        }
+        return;
+    }
+
+    if (ipEvidence.success && ipEvidence.datacenterLike) {
+        Core::Logger::Warn(
+            "[诊断/IP] 当前代理出口呈现机房/托管特征。此类 IP 可能导致 Antigravity agent mode 返回"
+            " `User location is not supported for the API use.`。建议优先更换为普通 ISP/住宅出口再试。 " +
+            ipSummary.str());
+    } else if (ipEvidence.success) {
+        Core::Logger::Info("[诊断/IP] 当前代理出口探测完成: " + ipSummary.str());
+    } else {
+        Core::Logger::Warn("[诊断/IP] 代理出口探测失败，暂时无法给出 IP 侧结论。 reason=" + ipEvidence.error);
+    }
+}
+
+static DWORD WINAPI AgentIpDiagnosisThreadProc(LPVOID) {
+    Sleep(3000);
+    const AgentExitIpEvidence ipEvidence = ProbeProxyExitIpEvidence();
+
+    // 最多观察 5 分钟：如果用户在启动后不久发起对话，基本都能命中当前会话的 ls-main.log。
+    for (int attempt = 0; attempt < 30; ++attempt) {
+        const AntLocationEvidence logEvidence = CollectLatestAntLocationEvidence();
+        if (logEvidence.matched) {
+            LogAgentIpDiagnosisResult(ipEvidence, logEvidence);
+            return 0;
+        }
+        Sleep(10000);
+    }
+
+    LogAgentIpDiagnosisResult(ipEvidence, CollectLatestAntLocationEvidence());
+    return 0;
+}
+
+static void StartAgentIpDiagnosisOnce() {
+    if (!IsCurrentAntigravityMainProcess()) return;
+    std::call_once(g_agentIpDiagnosisThreadOnce, []() {
+        HANDLE hThread = CreateThread(NULL, 0, AgentIpDiagnosisThreadProc, NULL, 0, NULL);
+        if (hThread) {
+            CloseHandle(hThread);
+        } else {
+            Core::Logger::Warn("[诊断/IP] 启动后台诊断线程失败, err=" + std::to_string(GetLastError()));
+        }
+    });
+}
+
+// 兼容说明：新版 Antigravity 的 language server 可能把真实对话执行链路继续下沉到 node.exe。
+// 为避免用户仍停留在 filtered 模式时漏掉该关键子进程，这里只对
+// `language_server_windows* -> node.exe` 这一条链路做窄范围自动继承注入。
+static bool ShouldAutoInjectLanguageServerNodeChild(const Core::Config& config, const std::string& childProcessName) {
+    if (!config.childInjection) return false;
+    if (ToLowerAsciiCopy(config.childInjectionMode) == "inherit") return false;
+
+    const std::string lowerChild = ToLowerAsciiCopy(childProcessName);
+    if (lowerChild != "node.exe" && lowerChild != "node") return false;
+
+    const std::string lowerCurrent = ToLowerAsciiCopy(GetCurrentProcessBaseName());
+    return lowerCurrent.find("language_server_windows") != std::string::npos;
+}
+
+static void LogLanguageServerNodeCompatInjectOnce(const std::string& childProcessName) {
+    std::call_once(g_languageServerNodeCompatLogOnce, [&childProcessName]() {
+        const std::string currentProcessName = GetCurrentProcessBaseName();
+        Core::Logger::Warn(
+            "[兼容] 检测到 " + (currentProcessName.empty() ? std::string("language_server_windows 子进程") : currentProcessName) +
+            " 派生了关键子进程 " + childProcessName +
+            "；为兼容新版 Antigravity 对话链路，filtered 模式下将自动继承注入。"
+            " 如需关闭该行为，请将 node.exe 加入 child_injection_exclude。");
+    });
 }
 
 // 统一 socket 类型判定入口：只读取一次 SO_TYPE，避免热路径重复 getsockopt
@@ -359,6 +748,11 @@ static void LogRuntimeConfigSummaryOnce() {
                 ", 描述=" + std::string(wsaData.szDescription));
             WSACleanup();
         }
+
+        // 额外诊断：在主 Antigravity 进程里异步探测“出口 IP + 最新 ls-main.log”。
+        // 设计意图：把“DLL 已生效但 agent 仍因 location 策略失败”的场景直接写进 proxy 日志，
+        // 降低用户误判成“新版 DLL 失效”的概率。
+        StartAgentIpDiagnosisOnce();
     });
 }
 
@@ -3015,7 +3409,8 @@ BOOL WINAPI DetourCreateProcessW(
         }
         
         const bool excluded = config.IsChildInjectionExcluded(appName);
-        const bool shouldInject = (!excluded) && (config.childInjectionMode == "inherit" || config.ShouldInject(appName));
+        const bool compatInject = (!excluded) && ShouldAutoInjectLanguageServerNodeChild(config, appName);
+        const bool shouldInject = (!excluded) && (config.childInjectionMode == "inherit" || config.ShouldInject(appName) || compatInject);
 
         // 检查是否需要注入子进程（受 child_injection_mode/排除列表影响）
         if (!shouldInject) {
@@ -3045,6 +3440,9 @@ BOOL WINAPI DetourCreateProcessW(
                 ResumeThread(lpProcessInformation->hThread);
             }
         } else {
+            if (compatInject) {
+                LogLanguageServerNodeCompatInjectOnce(appName);
+            }
             Core::Logger::Info("拦截到进程创建，准备注入 DLL...");
             
             // 注入 DLL 到子进程
@@ -3125,7 +3523,8 @@ BOOL WINAPI DetourCreateProcessA(
         }
         
         const bool excluded = config.IsChildInjectionExcluded(appName);
-        const bool shouldInject = (!excluded) && (config.childInjectionMode == "inherit" || config.ShouldInject(appName));
+        const bool compatInject = (!excluded) && ShouldAutoInjectLanguageServerNodeChild(config, appName);
+        const bool shouldInject = (!excluded) && (config.childInjectionMode == "inherit" || config.ShouldInject(appName) || compatInject);
 
         // 检查是否需要注入子进程（受 child_injection_mode/排除列表影响）
         if (!shouldInject) {
@@ -3155,6 +3554,9 @@ BOOL WINAPI DetourCreateProcessA(
                 ResumeThread(lpProcessInformation->hThread);
             }
         } else {
+            if (compatInject) {
+                LogLanguageServerNodeCompatInjectOnce(appName);
+            }
             Core::Logger::Info("拦截到进程创建(CreateProcessA)，准备注入 DLL...");
             
             // 注入 DLL 到子进程

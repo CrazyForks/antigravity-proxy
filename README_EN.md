@@ -25,6 +25,7 @@
 ## 📖 Table of Contents
 
 - [📖 Introduction](#-introduction)
+- [🚨 Read This First: Check IP Before DLL](#-read-this-first-check-ip-before-dll)
 - [⚡ Antigravity Quick Start](#-antigravity-quick-start)
 - [🔧 Troubleshooting Guide](#-troubleshooting-guide)
 - [✨ Features](#-features)
@@ -34,6 +35,64 @@
 - [🚀 Advanced Usage](#-advanced-usage)
 - [📄 License](#-license)
 - [👤 Author](#-author)
+
+---
+
+## 🚨 Read This First: Check IP Before DLL
+
+> **If Antigravity shows `Agent execution terminated due to error`, check your proxy egress IP first. Do not assume the DLL stopped working.**
+
+We have already verified the most misleading real-world scenario:
+- `version.dll` is loaded successfully
+- `language_server_windows_x64.exe` is injected successfully
+- `node.exe` is injected successfully
+- `oauth2.googleapis.com` / `daily-cloudcode-pa.googleapis.com` are still reachable through SOCKS5
+- **but Antigravity's own `ls-main.log` still returns:**
+  - `FAILED_PRECONDITION (code 400): User location is not supported for the API use.`
+
+In cases like this, the main cause is usually **not** DLL failure. It is more often:
+- **the current proxy egress IP / ASN / datacenter characteristic being rejected by Antigravity agent mode / Gemini CLI path**
+- in other words: **a supported country does not guarantee that this exact agent execution path accepts the current egress IP**
+
+### Which two logs should you check first
+
+#### 1. DLL log: proves the injection layer is alive
+- `<Antigravity Install Dir>\\logs\\proxy-YYYYMMDD.log`
+
+If you can see lines like these, the DLL itself is already doing its job:
+- `[成功] 已注入目标进程: language_server_windows_x64.exe`
+- `[成功] 已注入目标进程: node.exe`
+- `SOCKS5: 隧道建立成功, 目标=oauth2.googleapis.com:443`
+- `SOCKS5: 隧道建立成功, 目标=daily-cloudcode-pa.googleapis.com:443`
+
+Starting from this version, the DLL also emits IP diagnostics:
+- `[诊断/IP] 当前代理出口探测完成: ...`
+- `[诊断/IP] 当前代理出口呈现机房/托管特征...`
+- `[诊断/IP] 最新 Antigravity 日志已命中 location 限制错误，同时当前代理出口呈现机房/托管特征...`
+
+#### 2. Antigravity app log: proves the real failure is inside agent execution
+- `%APPDATA%\\Antigravity\\logs\\<latest session>\\ls-main.log`
+
+If you see this line:
+- `agent executor error: FAILED_PRECONDITION (code 400): User location is not supported for the API use.`
+
+then the real meaning is:
+- **the failure is no longer in DLL injection or the basic proxy tunnel**
+- **the failure is now inside Antigravity's own agent execution path**
+
+### Most effective troubleshooting order
+
+1. Check `proxy-YYYYMMDD.log`
+   - If injection and SOCKS5 are both successful, the DLL is probably fine.
+2. Check `%APPDATA%\\Antigravity\\logs\\<latest session>\\ls-main.log`
+   - If it contains `User location is not supported for the API use.`, prioritize IP troubleshooting.
+3. Try a **non-datacenter / non-hosted / residential / normal ISP** egress IP first
+   - Even inside the same country (for example, Singapore), different ASN / different egress types can lead to completely different results.
+4. Only go back to DLL troubleshooting if the DLL log does **not** show successful injection or successful proxy tunnel creation.
+
+### One-line memory hook
+
+> **When Antigravity chat fails, check the egress IP before blaming the DLL. If you see `location is not supported`, prioritize IP first.**
 
 ---
 
