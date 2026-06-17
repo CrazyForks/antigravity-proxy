@@ -633,7 +633,7 @@ namespace Core {
         ProxyRules rules;               // 代理路由规则
         bool trafficLogging = false;    // Phase 3: 是否启用流量监控日志
         bool diagnosticsAgentIpProbe = false; // 默认关闭外部 IP 探测，降低 release 默认联网行为面
-        std::string uiLoadNotify = "none";    // 加载提示策略：none/messagebox，默认不打扰用户
+        std::string uiLoadNotify = "once";    // 加载提示策略：once/none/messagebox，默认每个版本成功提示一次
         bool childInjection = true;     // Phase 2: 是否自动注入子进程
         // 子进程注入模式：
         // - "filtered"（默认）：按 target_processes 过滤
@@ -808,19 +808,19 @@ namespace Core {
                     diagnosticsAgentIpProbe = diag.value("agent_ip_probe", false);
                 }
 
-                // 可选 UI 提示：默认 none；messagebox 仅用于用户明确需要可视化确认加载成功时。
+                // 可选 UI 提示：默认 once；成功仅每个版本提示一次，失败仍会提示便于排障。
                 if (j.contains("ui") && j["ui"].is_object()) {
                     const auto& ui = j["ui"];
-                    uiLoadNotify = ui.value("load_notify", "none");
+                    uiLoadNotify = ui.value("load_notify", "once");
                 }
                 trimInPlace(uiLoadNotify);
                 std::transform(uiLoadNotify.begin(), uiLoadNotify.end(), uiLoadNotify.begin(),
                                [](unsigned char c) { return (char)std::tolower(c); });
                 if (uiLoadNotify == "message_box") uiLoadNotify = "messagebox";
-                if (uiLoadNotify.empty()) uiLoadNotify = "none";
-                if (uiLoadNotify != "none" && uiLoadNotify != "messagebox") {
-                    Logger::Warn("配置: ui.load_notify 无效(" + uiLoadNotify + ")，已回退为 none (可选: none/messagebox)");
-                    uiLoadNotify = "none";
+                if (uiLoadNotify.empty()) uiLoadNotify = "once";
+                if (uiLoadNotify != "once" && uiLoadNotify != "none" && uiLoadNotify != "messagebox") {
+                    Logger::Warn("配置: ui.load_notify 无效(" + uiLoadNotify + ")，已回退为 once (可选: once/none/messagebox)");
+                    uiLoadNotify = "once";
                 }
 
                 // ============= 代理路由规则解析 =============

@@ -290,6 +290,11 @@ namespace Core {
         }
 
     public:
+        // 暴露日志目录给加载提示使用，便于用户一键打开排障目录。
+        static std::string GetLogDirectoryPath() {
+            return GetLogDirectory();
+        }
+
         // 判断某个等级的日志是否会输出（用于调用方做“懒构造字符串”，减少性能开销）
         static bool IsEnabled(LogLevel level) {
             const int threshold = LevelStorage().load(std::memory_order_relaxed);
