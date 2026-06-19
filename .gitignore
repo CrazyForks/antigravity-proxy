@@ -42,6 +42,8 @@ Ankh.NoLoad
 
 #Visual Studio Code files
 .vscode/
+.idea/
+.sanshu-memory/
 
 #输出文件
 output/
@@ -53,4 +55,5 @@ log/
 build/
 build-x64/
 build-x86/
+build-tests/
 build-process-name-tests/

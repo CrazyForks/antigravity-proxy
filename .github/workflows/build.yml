@@ -8,7 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    # 固定到 Windows 2022，避免 windows-latest 迁移到 VS 2026 后找不到 VS 2022 生成器
+    runs-on: windows-2022
     
     strategy:
       matrix:
